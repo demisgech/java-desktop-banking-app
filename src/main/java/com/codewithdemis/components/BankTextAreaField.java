@@ -5,10 +5,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.Map;
 import javax.swing.*;
-import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 
-public class BankTextField extends JTextField {
+public class BankTextAreaField extends JTextArea {
 
     private Color borderColor;
     private Color focusColor;
@@ -22,11 +21,11 @@ public class BankTextField extends JTextField {
             "secondary", new Color[]{new Color(108, 117, 125), new Color(73, 80, 87)}
     );
 
-    public BankTextField(String placeholder){
-        this("","primary");
+    public BankTextAreaField(String placeholder) {
+        this(placeholder, "primary");
     }
 
-    public BankTextField(String placeholder, String variant) {
+    public BankTextAreaField(String placeholder, String variant) {
         super();
         setText(""); // Empty initially, use placeholder separately
 
@@ -44,7 +43,7 @@ public class BankTextField extends JTextField {
         setMargin(new Insets(10, 14, 10, 14)); // Bootstrap-like padding
 
         // Placeholder support (basic)
-        putClientProperty("JTextField.placeholderText", placeholder);
+        putClientProperty("JTextArea.placeholderText", placeholder);
 
         // Focus effect: update border color
         addFocusListener(new FocusAdapter() {
@@ -60,12 +59,12 @@ public class BankTextField extends JTextField {
         });
     }
 
-    public Color getBorderColor (){
+    public Color getBorderColor() {
         return borderColor;
     }
 
     private Border createRoundedBorder(Color color) {
-        return new RoundedLineBorder(color,2,16);
+        return new RoundedLineBorder(color, 2, 16);
     }
 
     @Override
@@ -82,42 +81,8 @@ public class BankTextField extends JTextField {
     @Override
     public Dimension getPreferredSize() {
         Dimension size = super.getPreferredSize();
-        int height = Math.max(size.height, 38); // Bootstrap input height ≈ 38px
+        int height = Math.max(size.height, 100); // Height for multi-line text
         int width = Math.max(size.width, 200);  // reasonable default width
         return new Dimension(width, height);
-    }
-
-    class RoundedLineBorder extends AbstractBorder {
-        private final Color color;
-        private final int thickness;
-        private final int arc;
-
-        public RoundedLineBorder(Color color, int thickness, int arc) {
-            this.color = color;
-            this.thickness = thickness;
-            this.arc = arc;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(thickness));
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.drawRoundRect(x + thickness / 2, y + thickness / 2,
-                    width - thickness, height - thickness, arc, arc);
-            g2.dispose();
-        }
-
-        @Override
-        public Insets getBorderInsets(Component c) {
-            return new Insets(10, 14, 10, 14);
-        }
-
-        @Override
-        public Insets getBorderInsets(Component c, Insets insets) {
-            insets.set(10, 14, 10, 14);
-            return insets;
-        }
     }
 }

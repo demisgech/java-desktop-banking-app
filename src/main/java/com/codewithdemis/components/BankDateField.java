@@ -1,15 +1,17 @@
+
 package com.codewithdemis.components;
 
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 
-public class BankTextField extends JTextField {
-
+public class BankDateField extends JFormattedTextField {
     private Color borderColor;
     private Color focusColor;
     private static final Color backgroundColor = Color.WHITE;
@@ -22,12 +24,12 @@ public class BankTextField extends JTextField {
             "secondary", new Color[]{new Color(108, 117, 125), new Color(73, 80, 87)}
     );
 
-    public BankTextField(String placeholder){
-        this("","primary");
+    public BankDateField(String placeholder) {
+        this(placeholder, "primary");
     }
 
-    public BankTextField(String placeholder, String variant) {
-        super();
+    public BankDateField(String placeholder, String variant) {
+        super(createDateFormatter());
         setText(""); // Empty initially, use placeholder separately
 
         Color[] colors = VARIANT_COLORS.getOrDefault(variant, VARIANT_COLORS.get("primary"));
@@ -44,7 +46,7 @@ public class BankTextField extends JTextField {
         setMargin(new Insets(10, 14, 10, 14)); // Bootstrap-like padding
 
         // Placeholder support (basic)
-        putClientProperty("JTextField.placeholderText", placeholder);
+        putClientProperty("JFormattedTextField.placeholderText", placeholder);
 
         // Focus effect: update border color
         addFocusListener(new FocusAdapter() {
@@ -60,12 +62,16 @@ public class BankTextField extends JTextField {
         });
     }
 
-    public Color getBorderColor (){
+    private static DateFormat createDateFormatter() {
+        return new SimpleDateFormat("yyyy-MM-dd");
+    }
+
+    public Color getBorderColor() {
         return borderColor;
     }
 
     private Border createRoundedBorder(Color color) {
-        return new RoundedLineBorder(color,2,16);
+        return new RoundedLineBorder(color, 2, 16);
     }
 
     @Override
@@ -121,3 +127,4 @@ public class BankTextField extends JTextField {
         }
     }
 }
+
