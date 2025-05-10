@@ -1,11 +1,11 @@
 package com.codewithdemis;
 
-import com.codewithdemis.components.MainFrame;
+import com.codewithdemis.frames.MainFrame;
+import javax.swing.*;
 
 public class TestComponent {
     public static void show() {
-       var frame = new MainFrame();
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(MainFrame::new);
     }
 }
 
