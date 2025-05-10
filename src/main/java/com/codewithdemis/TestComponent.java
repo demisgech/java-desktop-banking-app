@@ -12,6 +12,7 @@ public class TestComponent {
         frame.setSize(800, 600);
 
         var navbar = new Navbar("Home","About","Services","Login");
+        navbar.removeMenuItem("Login");
         frame.add(navbar);
 
         frame.setVisible(true);

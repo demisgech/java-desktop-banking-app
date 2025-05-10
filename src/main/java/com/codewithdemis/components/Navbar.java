@@ -1,9 +1,11 @@
 package com.codewithdemis.components;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Navbar extends JPanel {
     private Color navbarColor = new Color(40, 42, 54); // Dracula background (#282a36), lighter for contrast
@@ -12,8 +14,8 @@ public class Navbar extends JPanel {
     private Color accentColor = new Color(255, 121, 198); // Vibrant pink (#ff79c6) for accents
 
     private JPanel menuPanel;
-    private JButton hamburgerButton;
-    private boolean isMenuVisible = false;
+    private List<JButton> menuButtons; // Dynamically track menu buttons
+    private JButton loginBtn, signupBtn, logoutBtn;
 
     public Navbar(String... menuItems) {
         setLayout(new BorderLayout());
@@ -23,38 +25,36 @@ public class Navbar extends JPanel {
         menuPanel = new JPanel();
         menuPanel.setBackground(navbarColor);
         menuPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        menuButtons = new ArrayList<>();
 
-        // Loop through menu items to create buttons
+        // Loop through menu items to create buttons dynamically
         for (String item : menuItems) {
             JButton menuButton = createMenuButton(item);
             menuPanel.add(menuButton);
+            menuButtons.add(menuButton); // Store button references for possible future use
         }
 
-        // Hamburger button for small screens
-        hamburgerButton = createHamburgerButton();
+        // Auth buttons (Login, Sign Up, Logout)
+        JPanel authPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        authPanel.setOpaque(false);
 
-        // Add menuPanel and hamburgerButton to the navbar
-        add(menuPanel, BorderLayout.CENTER);
-        add(hamburgerButton, BorderLayout.EAST);
+        loginBtn = createNavButton("Login");
+        signupBtn = createNavButton("Sign Up");
+        logoutBtn = createNavButton("Logout");
 
-        // Initially hide the menu on small screens
-        menuPanel.setVisible(true);
+        // Add to authPanel initially
+        authPanel.add(loginBtn);
+        authPanel.add(signupBtn);
+        authPanel.add(logoutBtn);
 
-        // Add a resize listener to toggle visibility of the hamburger button and menu
-        this.addComponentListener(new java.awt.event.ComponentAdapter() {
-            @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                if (getWidth() <= 768) {
-                    hamburgerButton.setVisible(true);
-                    menuPanel.setVisible(false);
-                } else {
-                    hamburgerButton.setVisible(false);
-                    menuPanel.setVisible(true);
-                }
-            }
-        });
+        add(menuPanel, BorderLayout.WEST); // Adding menuPanel to the left
+        add(authPanel, BorderLayout.EAST); // Adding authPanel to the right
+
+        // Initially hide the menu and logout button (only show login and sign up)
+        showLoggedOut(); // Example to start with logged out state
     }
 
+    // --- Create menu button ---
     private JButton createMenuButton(String item) {
         JButton button = new JButton(item);
         button.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -81,31 +81,71 @@ public class Navbar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println(item + " clicked");
-                // You can handle your menu actions here (e.g., navigate to a different page or view).
+                // Handle menu actions here (e.g., navigate to a different page or view).
             }
         });
 
         return button;
     }
 
-    private JButton createHamburgerButton() {
-        JButton button = new JButton("☰");
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 24));
-        button.setForeground(textColor);
-        button.setBackground(navbarColor);
+    // --- Auth Button ---
+    private JButton createNavButton(String label) {
+        JButton button = new JButton(label);
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        button.setForeground(Color.WHITE);
+        button.setBackground(new Color(68, 71, 90));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        // Action for hamburger button
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                isMenuVisible = !isMenuVisible;
-                menuPanel.setVisible(isMenuVisible);
-            }
-        });
-
         return button;
     }
+
+    // --- Handle logged-in and logged-out states ---
+    public void showLoggedIn() {
+        loginBtn.setVisible(false);
+        signupBtn.setVisible(false);
+        logoutBtn.setVisible(true);
+    }
+
+    public void showLoggedOut() {
+        loginBtn.setVisible(true);
+        signupBtn.setVisible(true);
+        logoutBtn.setVisible(false);
+    }
+
+    // --- Event Listeners ---
+    public void onLogin(ActionListener listener) {
+        loginBtn.addActionListener(listener);
+    }
+
+    public void onSignup(ActionListener listener) {
+        signupBtn.addActionListener(listener);
+    }
+
+    public void onLogout(ActionListener listener) {
+        logoutBtn.addActionListener(listener);
+    }
+
+    // --- Method to dynamically add a new menu item ---
+    public void addMenuItem(String item) {
+        JButton newItem = createMenuButton(item);
+        menuPanel.add(newItem);
+        menuButtons.add(newItem);
+        menuPanel.revalidate();
+        menuPanel.repaint();
+    }
+
+    // --- Method to remove a menu item ---
+    public void removeMenuItem(String item) {
+        for (JButton button : menuButtons) {
+            if (button.getText().equals(item)) {
+                menuPanel.remove(button);
+                menuButtons.remove(button);
+                menuPanel.revalidate();
+                menuPanel.repaint();
+                break;
+            }
+        }
+    }
 }
+
