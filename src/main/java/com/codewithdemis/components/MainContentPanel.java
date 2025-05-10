@@ -35,9 +35,9 @@ public class MainContentPanel extends JPanel {
         }
     }
 
-    // Expose current layout if needed
-    public CardLayout getCardLayout(){
-        return cardLayout;
-    }
+//    // Expose current layout if needed
+//    public CardLayout getCardLayout(){
+//        return cardLayout;
+//    }
 
 }

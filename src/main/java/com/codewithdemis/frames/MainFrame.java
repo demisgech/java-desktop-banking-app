@@ -5,8 +5,10 @@ import com.codewithdemis.components.Navbar;
 import com.codewithdemis.components.Sidebar;
 import com.codewithdemis.pages.AccountPage;
 import com.codewithdemis.pages.DashboardPage;
+import com.codewithdemis.pages.LoginPage;
 import com.codewithdemis.pages.SettingsPage;
 import com.codewithdemis.pages.TransactionsPage;
+
 import java.awt.*;
 import javax.swing.*;
 
@@ -20,7 +22,8 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
 
         // Top Navbar
-        add(new Navbar("Home","Services","About"),BorderLayout.NORTH);
+        Navbar navbar = new Navbar("Home", "Services", "About");
+        add(navbar,BorderLayout.NORTH);
 
 
         // Sidebar menu
@@ -32,12 +35,15 @@ public class MainFrame extends JFrame {
         mainContent.addPage("Account", new AccountPage());
         mainContent.addPage("Transactions", new TransactionsPage());
         mainContent.addPage("Settings", new SettingsPage());
+        mainContent.addPage("Login", new LoginPage());
 
         // Hook up menu clicks to show pages
         sidebar.onMenuClick("Dashboard", e -> mainContent.showPage("Dashboard"));
         sidebar.onMenuClick("Account", e -> mainContent.showPage("Account"));
         sidebar.onMenuClick("Transactions", e -> mainContent.showPage("Transactions"));
         sidebar.onMenuClick("Settings", e -> mainContent.showPage("Settings"));
+
+        navbar.onLogin( e -> mainContent.showPage("Login"));
 
         var roundedPanel = new RoundedPanelFrame(20);
 
