@@ -7,6 +7,7 @@ import com.codewithdemis.pages.AccountPage;
 import com.codewithdemis.pages.DashboardPage;
 import com.codewithdemis.pages.LoginPage;
 import com.codewithdemis.pages.SettingsPage;
+import com.codewithdemis.pages.SignupPage;
 import com.codewithdemis.pages.TransactionsPage;
 
 import java.awt.*;
@@ -37,6 +38,8 @@ public class MainFrame extends JFrame {
         mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
 
+        mainContent.addPage("Signup",new SignupPage());
+
         // Hook up menu clicks to show pages
         sidebar.onMenuClick("Dashboard", e -> mainContent.showPage("Dashboard"));
         sidebar.onMenuClick("Account", e -> mainContent.showPage("Account"));
@@ -44,6 +47,7 @@ public class MainFrame extends JFrame {
         sidebar.onMenuClick("Settings", e -> mainContent.showPage("Settings"));
 
         navbar.onLogin( e -> mainContent.showPage("Login"));
+        navbar.onSignup(e->mainContent.showPage("Signup"));
 
         var roundedPanel = new RoundedPanelFrame(20);
 

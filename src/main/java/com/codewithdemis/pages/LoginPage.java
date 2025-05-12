@@ -4,10 +4,10 @@ package com.codewithdemis.pages;
 import com.codewithdemis.components.BankButton;
 import com.codewithdemis.components.BankLabeledInputField;
 import com.codewithdemis.components.BankPasswordLabeledInputField;
+import com.codewithdemis.components.EmailLabeledInputField;
 import com.codewithdemis.components.RoundedLineBorder;
+
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -22,7 +22,6 @@ public class LoginPage extends JPanel {
         setBackground(new Color(68, 71, 90));
 
         // Center container panel for the login card
-//        JPanel container = new JPanel(new GridBagLayout());
         JPanel container = new JPanel(new GridBagLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -58,9 +57,11 @@ public class LoginPage extends JPanel {
 
         // Username Field
         usernameField = new BankLabeledInputField("Username", "Username...");
+        var emailField = new EmailLabeledInputField("Email","Email...");
         inner.gridx = 0;
         inner.gridy = 0;
-        container.add(usernameField, inner);
+//        container.add(usernameField, inner);
+        container.add(emailField, inner);
 
         // Password Field
         passwordField = new BankPasswordLabeledInputField("Password", "Password...");
@@ -84,21 +85,18 @@ public class LoginPage extends JPanel {
         add(container, new GridBagConstraints());
 
         // Action Listener for Login Button
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String username = usernameField.getTextField().getText();  // Use getText to retrieve the text
-                char[] password = passwordField.getPasswordField().getPassword();
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getTextField().getText();  // Use getText to retrieve the text
+            char[] password = passwordField.getPasswordField().getPassword();
 
-                if (authenticate(username, String.valueOf(password))) {
-                    // Proceed to next screen (Dashboard)
-                    JOptionPane.showMessageDialog(null, "Login successful!");
-                    // Switch to the Dashboard or main frame here
-                } else {
-                    String errorMsg = "Invalid username or password.";
-                    errorLabel.setText(errorMsg);
-                    JOptionPane.showMessageDialog(LoginPage.this, errorMsg, "Login Failed", JOptionPane.ERROR_MESSAGE);
-                }
+            if (authenticate(username, String.valueOf(password))) {
+                // Proceed to next screen (Dashboard)
+                JOptionPane.showMessageDialog(null, "Login successful!");
+                // Switch to the Dashboard or main frame here
+            } else {
+                String errorMsg = "Invalid username or password.";
+                errorLabel.setText(errorMsg);
+                JOptionPane.showMessageDialog(LoginPage.this, errorMsg, "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
