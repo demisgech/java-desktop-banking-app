@@ -18,11 +18,12 @@ public class LoginPage extends JPanel {
     private JLabel errorLabel;
 
     public LoginPage() {
-        setLayout(new GridBagLayout());
+//        setLayout(new GridBagLayout());
+        setLayout(new BorderLayout());
         setBackground(new Color(68, 71, 90));
 
         // Center container panel for the login card
-        JPanel container = new JPanel(new GridBagLayout()) {
+        JPanel formPanel = new JPanel(new GridBagLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -36,12 +37,12 @@ public class LoginPage extends JPanel {
                 super.paintComponent(g);
             }
         };
-        container.setOpaque(false); // Let paintComponent do the background
+        formPanel.setOpaque(false); // Let paintComponent do the background
 
-        container.setBackground(new Color(100, 100, 255));
+        formPanel.setBackground(new Color(100, 100, 255));
 
-        container.setBorder(new RoundedLineBorder(new Color(248, 248, 255), 2, 24));
-        container.setPreferredSize(new Dimension(380, 300)); // Fixed size card
+        formPanel.setBorder(new RoundedLineBorder(new Color(248, 248, 255), 2, 24));
+        formPanel.setPreferredSize(new Dimension(380, 300)); // Fixed size card
 
 
         // GridBagLayout constraints
@@ -61,17 +62,17 @@ public class LoginPage extends JPanel {
         inner.gridx = 0;
         inner.gridy = 0;
 //        container.add(usernameField, inner);
-        container.add(emailField, inner);
+        formPanel.add(emailField, inner);
 
         // Password Field
         passwordField = new BankPasswordLabeledInputField("Password", "Password...");
         inner.gridy = 1;
-        container.add(passwordField, inner);
+        formPanel.add(passwordField, inner);
 
         // Login Button
         BankButton loginButton = new BankButton("Login", "primary");
         inner.gridy = 2;
-        container.add(loginButton, inner);
+        formPanel.add(loginButton, inner);
 
         // Error Label
         errorLabel = new JLabel("");
@@ -79,10 +80,24 @@ public class LoginPage extends JPanel {
         errorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
         inner.gridy = 3;
-        container.add(errorLabel, inner);
+        formPanel.add(errorLabel, inner);
 
-        // Add the container to center of this page
-        add(container, new GridBagConstraints());
+        // === Centering wrapper ===
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setOpaque(false);
+        wrapper.add(formPanel, new GridBagConstraints());
+
+        // === Scroll Pane ===
+        JScrollPane scrollPane = new JScrollPane(wrapper);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(null);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // smooth scrolling
+
+        add(scrollPane, BorderLayout.CENTER);
+
 
         // Action Listener for Login Button
         loginButton.addActionListener(e -> {
