@@ -1,9 +1,12 @@
 package com.codewithdemis.components;
 
+import com.codewithdemis.models.User;
 import java.awt.*;
+import java.util.function.Consumer;
 import javax.swing.*;
 
 public class SignupForm extends JPanel {
+    private Consumer<User> onSignupComplete;
 
     private BankLabeledInputField firstNameField;
     private BankLabeledInputField lastNameField;
@@ -129,6 +132,11 @@ public class SignupForm extends JPanel {
 
             String gender = (String) genderComboBox.getSelectedItem();
 
+            User newUser = new User(firstName, lastName,username, email);
+
+            if (onSignupComplete != null)
+                onSignupComplete.accept(newUser);
+
             if (firstName.isEmpty() || lastName.isEmpty() || age.isEmpty()
                     || email.isEmpty() || phone.isEmpty() || username.isEmpty()
                     || password.isEmpty() || confirmPassword.isEmpty() || gender == null || gender.equals("Select Gender")) {
@@ -149,5 +157,9 @@ public class SignupForm extends JPanel {
                 // Save user account logic goes here
             }
         });
+    }
+
+    public void setOnSignupComplete(Consumer<User> onSignupComplete) {
+        this.onSignupComplete = onSignupComplete;
     }
 }

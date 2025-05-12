@@ -12,6 +12,8 @@ import com.codewithdemis.pages.TransactionsPage;
 
 import java.awt.*;
 import javax.swing.*;
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.swing.FontIcon;
 
 public class MainFrame extends JFrame {
 
@@ -28,17 +30,26 @@ public class MainFrame extends JFrame {
 
 
         // Sidebar menu
-        var sidebar = new Sidebar("Dashboard", "Account", "Transactions", "Settings","Reports");
+        var sidebar = new Sidebar("Dashboard", "Transactions", "Settings","Reports");
 
         // Main content panel with CardLayout
         MainContentPanel mainContent = new MainContentPanel();
         mainContent.addPage("Dashboard", new DashboardPage());
-        mainContent.addPage("Account", new AccountPage());
+//        mainContent.addPage("Account", new AccountPage(null));
         mainContent.addPage("Transactions", new TransactionsPage());
         mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
 
-        mainContent.addPage("Signup",new SignupPage());
+        SignupPage signupPage = new SignupPage();
+
+        signupPage.setOnSignupComplete(user -> {
+            AccountPage accountPage = new AccountPage(user);
+            mainContent.addPage("Account", accountPage);
+            mainContent.showPage("Account");
+            sidebar.addMenuItem("Account", FontIcon.of(FontAwesome.USER_CIRCLE,20,Color.white));
+        });
+
+        mainContent.addPage("Signup",signupPage);
 
         // Hook up menu clicks to show pages
         sidebar.onMenuClick("Dashboard", e -> mainContent.showPage("Dashboard"));
