@@ -3,7 +3,7 @@ package com.codewithdemis.frames;
 import com.codewithdemis.components.MainContentPanel;
 import com.codewithdemis.components.Navbar;
 import com.codewithdemis.components.Sidebar;
-import com.codewithdemis.pages.AccountPage;
+import com.codewithdemis.pages.ProfilePage;
 import com.codewithdemis.pages.DashboardPage;
 import com.codewithdemis.pages.LoginPage;
 import com.codewithdemis.pages.SettingsPage;
@@ -30,7 +30,9 @@ public class MainFrame extends JFrame {
 
 
         // Sidebar menu
-        var sidebar = new Sidebar("Dashboard", "Transactions", "Settings","Reports");
+        var sidebar = new Sidebar(
+                "Dashboard", "Transactions", "Settings","Reports",
+                "User Management","Account Management");
 
         // Main content panel with CardLayout
         MainContentPanel mainContent = new MainContentPanel();
@@ -40,13 +42,25 @@ public class MainFrame extends JFrame {
         mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
 
+        mainContent.addPage("Dashboard", new DashboardPanel());
+        UserManagementPanel userManagement = new UserManagementPanel();
+
+        mainContent.addPage("User Management", userManagement);
+        mainContent.addPage("Account Management", new AccountManagementPanel());
+
+        userManagement.onAdd(e -> mainContent.showPage("Signup"));;
+        userManagement.onEdit(e -> mainContent.showPage("Profile"));;
+        userManagement.onDelete(e -> {
+         // Delete user from the database here
+        });;
+
         SignupPage signupPage = new SignupPage();
 
         signupPage.setOnSignupComplete(user -> {
-            AccountPage accountPage = new AccountPage(user);
-            mainContent.addPage("Account", accountPage);
-            mainContent.showPage("Account");
-            sidebar.addMenuItem("Account", FontIcon.of(FontAwesome.USER_CIRCLE,20,Color.white));
+            ProfilePage accountPage = new ProfilePage(user);
+            mainContent.addPage("Profile", accountPage);
+            mainContent.showPage("Profile");
+            sidebar.addMenuItem("Profile", FontIcon.of(FontAwesome.USER_CIRCLE,20,Color.white));
         });
 
         mainContent.addPage("Signup",signupPage);
@@ -56,6 +70,8 @@ public class MainFrame extends JFrame {
         sidebar.onMenuClick("Account", e -> mainContent.showPage("Account"));
         sidebar.onMenuClick("Transactions", e -> mainContent.showPage("Transactions"));
         sidebar.onMenuClick("Settings", e -> mainContent.showPage("Settings"));
+        sidebar.onMenuClick("User Management", e -> mainContent.showPage("User Management"));
+        sidebar.onMenuClick("Account Management", e -> mainContent.showPage("Account Management"));
 
         navbar.onLogin( e -> mainContent.showPage("Login"));
         navbar.onSignup(e->mainContent.showPage("Signup"));

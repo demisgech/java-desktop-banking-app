@@ -2,7 +2,6 @@ package com.codewithdemis.components;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,10 @@ public class Navbar extends JPanel {
 
     private JPanel menuPanel;
     private List<JButton> menuButtons; // Dynamically track menu buttons
-    private JButton loginBtn, signupBtn, logoutBtn;
+    private JButton loginBtn;
+    private JButton signupBtn;
+    private JButton logoutBtn;
+
 
     public Navbar(String... menuItems) {
         setLayout(new BorderLayout());
@@ -43,6 +45,7 @@ public class Navbar extends JPanel {
         logoutBtn = createNavButton("Logout");
 
         // Add to authPanel initially
+
         authPanel.add(loginBtn);
         authPanel.add(signupBtn);
         authPanel.add(logoutBtn);
@@ -77,12 +80,8 @@ public class Navbar extends JPanel {
             }
         });
 
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println(item + " clicked");
-                // Handle menu actions here (e.g., navigate to a different page or view).
-            }
+        button.addActionListener(e -> {
+            System.out.println(item + " clicked");
         });
 
         return button;
@@ -105,12 +104,14 @@ public class Navbar extends JPanel {
         loginBtn.setVisible(false);
         signupBtn.setVisible(false);
         logoutBtn.setVisible(true);
+//        adminButton.setVisible(true);
     }
 
     public void showLoggedOut() {
         loginBtn.setVisible(true);
         signupBtn.setVisible(true);
         logoutBtn.setVisible(false);
+//        adminButton.setVisible(false);
     }
 
     // --- Event Listeners ---

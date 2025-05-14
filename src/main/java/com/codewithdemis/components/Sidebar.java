@@ -19,11 +19,13 @@ public class Sidebar extends JPanel {
     private final Map<String, JButton> menuButtons = new HashMap<>();
 
     private final Map<String, FontIcon> icons = Map.of(
-            "Account", FontIcon.of(FontAwesome.USER_CIRCLE, 20, Color.white),
+            "Profile", FontIcon.of(FontAwesome.USER_CIRCLE, 20, Color.white),
             "Settings", FontIcon.of(FontAwesome.GEAR, 20, Color.white),
             "Transactions", FontIcon.of(FontAwesome.ARCHIVE, 20, Color.white),
             "Dashboard", FontIcon.of(FontAwesome.DASHBOARD, 20, Color.white),
-            "Reports", FontIcon.of(FontAwesome.RECYCLE,18,Color.white)
+            "Reports", FontIcon.of(FontAwesome.RECYCLE,20,Color.white),
+            "User Management", FontIcon.of(FontAwesome.USERS,20,Color.white),
+            "Account Management", FontIcon.of(FontAwesome.BOOK,20,Color.white)
     );
 
     public Sidebar(String... menuItems) {

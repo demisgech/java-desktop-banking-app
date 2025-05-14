@@ -1,37 +1,34 @@
-package com.codewithdemis.pages;
+package com.codewithdemis.frames;
 
-import javax.swing.*;
+import com.codewithdemis.components.BankButton;
+import com.codewithdemis.components.BankTextField;
 import java.awt.*;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
-public class TransactionsPage extends JPanel {
-    public TransactionsPage() {
+public class AccountManagementPanel extends JPanel {
+
+    private BankTextField searchField;
+    public AccountManagementPanel() {
         setLayout(new BorderLayout());
-//        setBackground(new Color(248, 248, 255)); // Match soft background
-//        setBackground(new Color(20, 22, 34)); // Match soft background
-        setBackground(new Color(248, 248, 255)); // Same soft white
 
+        // Search panel
+        JPanel searchPanel = new JPanel();
+        searchField = new BankTextField("Search...");
+        BankButton searchButton = new BankButton("Search","success");
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.setOpaque(false);
 
-        JLabel title = new JLabel("Transactions");
-        title.setForeground(new Color(248, 248, 242));
-        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        title.setBorder(new EmptyBorder(30, 30, 10, 0));
-        add(title, BorderLayout.NORTH);
-
-
-        String[] columns = {"ID", "Type", "Amount", "From Account", "To Account", "Date"};
+        // Accounts table
+        String[] columns = {"Account Number", "User", "Balance", "Status"};
         Object[][] data = {
-                {"1","DEPOSIT","$5000","-", "ACC1002", "2025-04-02"},
-                {"2","DEPOSIT","$400.0","-", "ACC1002", "2025-04-02"},
-                {"3","WITHDRAW","$50.0","ACC1003", "-", "2025-05-02"},
-                {"4", "DEPOSIT", "$500.00", "-", "ACC1001", "2023-05-25"},
-                {"5", "TRANSFER", "$200.00", "ACC1001", "ACC1002", "2023-05-15"}
+                {"ACC1001", "John Doe", "$1,500.00", "ACTIVE"},
+                {"ACC1002", "Jane Smith", "$3,200.50", "BLOCKED"}
         };
-
-
         JTable table = new JTable(data, columns);
+
 
         table.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         table.setRowHeight(28);
@@ -79,8 +76,20 @@ public class TransactionsPage extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        add(scrollPane, BorderLayout.CENTER);
+        // Action buttons
+        JPanel buttonPanel = new JPanel();
+        JButton createButton = new BankButton("Create Account");
+        JButton blockButton = new BankButton("Block/Unblock","warning");
+        JButton closeButton = new BankButton("Close Account","danger");
+        buttonPanel.add(createButton);
+        buttonPanel.add(blockButton);
+        buttonPanel.add(closeButton);
+        buttonPanel.setOpaque(false);
 
+
+        add(searchPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     @Override
@@ -95,4 +104,5 @@ public class TransactionsPage extends JPanel {
         g2d.setPaint(gradient);
         g2d.fillRect(0, 0, getWidth(), getHeight());
     }
+
 }

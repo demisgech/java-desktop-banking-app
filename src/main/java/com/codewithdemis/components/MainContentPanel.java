@@ -35,9 +35,10 @@ public class MainContentPanel extends JPanel {
         }
     }
 
-//    // Expose current layout if needed
-//    public CardLayout getCardLayout(){
-//        return cardLayout;
-//    }
-
+    public void removePage(String name) {
+        if (pages.containsKey(name)) {
+            remove(pages.get(name));
+            pages.remove(name);
+        }
+    }
 }

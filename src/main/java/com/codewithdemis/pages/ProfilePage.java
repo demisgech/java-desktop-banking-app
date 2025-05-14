@@ -7,9 +7,9 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-public class AccountPage extends JPanel {
+public class ProfilePage extends JPanel {
 
-    public AccountPage(User user) {
+    public ProfilePage(User user) {
         setLayout(new BorderLayout());
         setOpaque(false); // for gradient background
 
