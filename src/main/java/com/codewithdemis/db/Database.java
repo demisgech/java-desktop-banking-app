@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Database {
-    private static Database instance;
+    private static volatile Database instance;
     private Connection connection;
 
     public Database() {
@@ -29,6 +29,18 @@ public class Database {
     }
 
     public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                System.out.println("Reconnecting to the database...");
+                connection = DriverManager.getConnection(
+                        DbConfig.url,
+                        DbConfig.user,
+                        DbConfig.password
+                );
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to establish or retrieve DB connection", e);
+        }
         return connection;
     }
 

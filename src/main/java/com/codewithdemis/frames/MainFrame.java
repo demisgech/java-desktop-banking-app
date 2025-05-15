@@ -41,12 +41,16 @@ public class MainFrame extends JFrame {
         mainContent.addPage("Transactions", new TransactionsPage());
         mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
+        mainContent.addPage("AccountCreatorPanel",new AccountCreatorPanel());
 
         mainContent.addPage("Dashboard", new DashboardPanel());
         UserManagementPanel userManagement = new UserManagementPanel();
 
         mainContent.addPage("User Management", userManagement);
-        mainContent.addPage("Account Management", new AccountManagementPanel());
+        AccountManagementPanel accountManagementPanel = new AccountManagementPanel(pageName->{
+            mainContent.showPage(pageName);
+        });
+        mainContent.addPage("Account Management",accountManagementPanel);
 
         userManagement.onAdd(e -> mainContent.showPage("Signup"));;
         userManagement.onEdit(e -> mainContent.showPage("Profile"));;
@@ -64,6 +68,7 @@ public class MainFrame extends JFrame {
         });
 
         mainContent.addPage("Signup",signupPage);
+
 
         // Hook up menu clicks to show pages
         sidebar.onMenuClick("Dashboard", e -> mainContent.showPage("Dashboard"));

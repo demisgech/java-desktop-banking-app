@@ -9,17 +9,21 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 public class AccountManagementPanel extends JPanel {
-
+    private JTable table;
     private BankTextField searchField;
-    public AccountManagementPanel() {
+    private NavigatorListener navigationListener;
+
+    public AccountManagementPanel(NavigatorListener navigatorListener) {
+        this.navigationListener = navigatorListener;
         setLayout(new BorderLayout());
 //        JPanel searchPanel = getSearchPanel();
         JLabel title = new JLabel("Welcome to Account Management");
-        title.setFont(new Font("OpenSans",Font.BOLD,28));
-        title.setForeground(new Color(200,200,200));
+        title.setFont(new Font("OpenSans", Font.BOLD, 28));
+        title.setForeground(new Color(200, 200, 200));
 
         var header = new JPanel();
         header.add(title);
@@ -36,10 +40,16 @@ public class AccountManagementPanel extends JPanel {
 
         List<Object[]> accountData = getAccountData();
 
-        for (var d: data)
+        for (var d : data)
             accountData.add(d);
         var dataArray = accountData.toArray(new Object[0][]);
-        JTable table = new JTable(dataArray, columns);
+        DefaultTableModel model = new DefaultTableModel(dataArray, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        table = new JTable(model);
 
         styleTable(table);
 
@@ -57,23 +67,68 @@ public class AccountManagementPanel extends JPanel {
         // Search panel
         JPanel searchPanel = new JPanel();
         searchField = new BankTextField("Search...");
-        BankButton searchButton = new BankButton("Search","success");
+        BankButton searchButton = new BankButton("Search", "success");
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
         searchPanel.setOpaque(false);
         return searchPanel;
     }
 
-    private static JPanel getActionButtonPanel() {
+    private JPanel getActionButtonPanel() {
         JPanel buttonPanel = new JPanel();
         JButton createButton = new BankButton("Create Account");
-        JButton blockButton = new BankButton("Block/Unblock","warning");
-        JButton closeButton = new BankButton("Close Account","danger");
+        JButton blockButton = new BankButton("Block/Unblock", "warning");
+        JButton deleteButton = new BankButton("Delete Account", "danger");
         buttonPanel.add(createButton);
         buttonPanel.add(blockButton);
-        buttonPanel.add(closeButton);
+        buttonPanel.add(deleteButton);
         buttonPanel.setOpaque(false);
+
+        createButton.addActionListener(e -> {
+            if (navigationListener != null) {
+                navigationListener.onNavigate("AccountCreatorPanel");
+            }
+        });
+
+        // Add delete action listener
+        deleteButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(null, "Please select an account to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String accountNumber = (String) table.getValueAt(selectedRow, 0);
+
+            int confirm = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to delete account " + accountNumber + "?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                deleteAccount(accountNumber);
+                // Remove row from table model
+                ((DefaultTableModel) table.getModel()).removeRow(selectedRow);
+            }
+        });
         return buttonPanel;
+    }
+
+    private void deleteAccount(String accountNumber) {
+        String sql = "DELETE FROM accounts WHERE account_number = ?";
+        try (var conn = Database.getInstance().getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, accountNumber);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Account deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Account not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error deleting account: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private static JScrollPane getjScrollPane(JPanel tableWrapper) {
@@ -144,7 +199,7 @@ public class AccountManagementPanel extends JPanel {
                     JOIN account_status ast ON a.status_id = ast.id;
                     """;
             var result = statement.executeQuery(sql);
-            while (result.next()){
+            while (result.next()) {
                 accountData.add(new Object[]{
                         result.getString("account_number"),
                         result.getString("full_name"),
