@@ -2,7 +2,11 @@ package com.codewithdemis.frames;
 
 import com.codewithdemis.components.BankButton;
 import com.codewithdemis.components.BankTextField;
+import com.codewithdemis.db.Database;
 import java.awt.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
@@ -12,14 +16,16 @@ public class AccountManagementPanel extends JPanel {
     private BankTextField searchField;
     public AccountManagementPanel() {
         setLayout(new BorderLayout());
+//        JPanel searchPanel = getSearchPanel();
+        JLabel title = new JLabel("Welcome to Account Management");
+        title.setFont(new Font("OpenSans",Font.BOLD,28));
+        title.setForeground(new Color(200,200,200));
 
-        // Search panel
-        JPanel searchPanel = new JPanel();
-        searchField = new BankTextField("Search...");
-        BankButton searchButton = new BankButton("Search","success");
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
-        searchPanel.setOpaque(false);
+        var header = new JPanel();
+        header.add(title);
+        header.setOpaque(false);
+//        header.add(searchPanel);
+
 
         // Accounts table
         String[] columns = {"Account Number", "User", "Balance", "Status"};
@@ -27,9 +33,79 @@ public class AccountManagementPanel extends JPanel {
                 {"ACC1001", "John Doe", "$1,500.00", "ACTIVE"},
                 {"ACC1002", "Jane Smith", "$3,200.50", "BLOCKED"}
         };
-        JTable table = new JTable(data, columns);
 
+        List<Object[]> accountData = getAccountData();
 
+        for (var d: data)
+            accountData.add(d);
+        var dataArray = accountData.toArray(new Object[0][]);
+        JTable table = new JTable(dataArray, columns);
+
+        styleTable(table);
+
+        JPanel tableWrapper = getTableWrapper(table);
+        JScrollPane scrollPane = getjScrollPane(tableWrapper);
+        JPanel buttonPanel = getActionButtonPanel();
+
+//        add(searchPanel, BorderLayout.NORTH);
+        add(header, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel getSearchPanel() {
+        // Search panel
+        JPanel searchPanel = new JPanel();
+        searchField = new BankTextField("Search...");
+        BankButton searchButton = new BankButton("Search","success");
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.setOpaque(false);
+        return searchPanel;
+    }
+
+    private static JPanel getActionButtonPanel() {
+        JPanel buttonPanel = new JPanel();
+        JButton createButton = new BankButton("Create Account");
+        JButton blockButton = new BankButton("Block/Unblock","warning");
+        JButton closeButton = new BankButton("Close Account","danger");
+        buttonPanel.add(createButton);
+        buttonPanel.add(blockButton);
+        buttonPanel.add(closeButton);
+        buttonPanel.setOpaque(false);
+        return buttonPanel;
+    }
+
+    private static JScrollPane getjScrollPane(JPanel tableWrapper) {
+        JScrollPane scrollPane = new JScrollPane(tableWrapper,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        return scrollPane;
+    }
+
+    private JPanel getTableWrapper(JTable table) {
+        JPanel tableWrapper = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(36, 39, 58, 230));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                g2.dispose();
+            }
+        };
+        tableWrapper.setOpaque(false);
+        tableWrapper.setBorder(new EmptyBorder(20, 30, 30, 30));
+        tableWrapper.add(table.getTableHeader(), BorderLayout.NORTH);
+        tableWrapper.add(table, BorderLayout.CENTER);
+        return tableWrapper;
+    }
+
+    private static void styleTable(JTable table) {
         table.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         table.setRowHeight(28);
         table.setForeground(new Color(248, 248, 242));
@@ -51,45 +127,35 @@ public class AccountManagementPanel extends JPanel {
             }
             table.getColumnModel().getColumn(column).setPreferredWidth(width);
         }
+    }
 
-        // === Scroll with padding ===
-        JPanel tableWrapper = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(36, 39, 58, 230));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                g2.dispose();
+    private static List<Object[]> getAccountData() {
+        List<Object[]> accountData = new ArrayList<>();
+
+        try {
+
+            var instance = Database.getInstance();
+            var connection = instance.getConnection();
+            var statement = connection.createStatement();
+            String sql = """
+                    SELECT  a.account_number, CONCAT(u.first_name, '  ',u.last_name) AS full_name,a.balance,ast.status_name AS status
+                    FROM accounts a
+                    JOIN users u ON a.user_id = u.id
+                    JOIN account_status ast ON a.status_id = ast.id;
+                    """;
+            var result = statement.executeQuery(sql);
+            while (result.next()){
+                accountData.add(new Object[]{
+                        result.getString("account_number"),
+                        result.getString("full_name"),
+                        result.getString("balance"),
+                        result.getString("status")
+                });
             }
-        };
-        tableWrapper.setOpaque(false);
-        tableWrapper.setBorder(new EmptyBorder(20, 30, 30, 30));
-        tableWrapper.add(table.getTableHeader(), BorderLayout.NORTH);
-        tableWrapper.add(table, BorderLayout.CENTER);
-
-        JScrollPane scrollPane = new JScrollPane(tableWrapper,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setOpaque(false);
-        scrollPane.getViewport().setOpaque(false);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-
-        // Action buttons
-        JPanel buttonPanel = new JPanel();
-        JButton createButton = new BankButton("Create Account");
-        JButton blockButton = new BankButton("Block/Unblock","warning");
-        JButton closeButton = new BankButton("Close Account","danger");
-        buttonPanel.add(createButton);
-        buttonPanel.add(blockButton);
-        buttonPanel.add(closeButton);
-        buttonPanel.setOpaque(false);
-
-
-        add(searchPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        add(buttonPanel, BorderLayout.SOUTH);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return accountData;
     }
 
     @Override
