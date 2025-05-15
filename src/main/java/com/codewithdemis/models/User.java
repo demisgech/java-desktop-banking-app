@@ -1,13 +1,13 @@
 package com.codewithdemis.models;
 
-import java.util.UUID;
-
 public class User {
-    private final UUID userId;
+    private final int userId;
     private final String  firstName;
     private final String lastName;
     private final String username;
+    private final String phoneNumber;
     private final String email;
+    private final String password;
 
     public User(String firstName,
                 String lastName,
@@ -17,14 +17,16 @@ public class User {
         this.lastName = lastName;
         this.username = username;
         this.email = email;
-        userId = UUID.randomUUID();
+        userId = 1;
+        password = "password goes here";
+        phoneNumber = "phone number goes here";
     }
 
     public String getUsername() {
         return username;
     }
 
-    public UUID getUserId() {
+    public int getUserId() {
         return userId;
     }
 
@@ -38,5 +40,13 @@ public class User {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
