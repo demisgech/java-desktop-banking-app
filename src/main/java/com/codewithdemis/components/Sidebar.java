@@ -1,9 +1,11 @@
 package com.codewithdemis.components;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
@@ -16,9 +18,13 @@ public class Sidebar extends JPanel {
 
     private final JPanel menuPanel;
 
-    private final Map<String, JButton> menuButtons = new HashMap<>();
+    private String selectedMenuLabel = null;
 
-    private final Map<String, FontIcon> icons = Map.of(
+    private Map<String , java.util.List<ActionListener>> pendingListeners = new HashMap<>();
+    private java.util.List<MenuSelectionListener> menuSelectionListeners = new ArrayList<>();
+    private Map<String, JButton> menuButtons = new HashMap<>();
+
+    private final Map<String, FontIcon> defaultIcons = Map.of(
             "Profile", FontIcon.of(FontAwesome.USER_CIRCLE, 20, Color.white),
             "Settings", FontIcon.of(FontAwesome.GEAR, 20, Color.white),
             "Transactions", FontIcon.of(FontAwesome.ARCHIVE, 20, Color.white),
@@ -28,7 +34,7 @@ public class Sidebar extends JPanel {
             "Account Management", FontIcon.of(FontAwesome.BOOK,20,Color.white)
     );
 
-    public Sidebar(String... menuItems) {
+    public Sidebar(String ...menuItems) {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(sidebarWidth, 600)); // Fixed width
         setBackground(new Color(40, 42, 54)); // Dracula background
@@ -39,10 +45,8 @@ public class Sidebar extends JPanel {
         menuPanel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
         menuPanel.setOpaque(false);
         add(menuPanel, BorderLayout.WEST);
-
-        // Initialize with menu items
         for (String item : menuItems) {
-            addMenuItem(item, icons.get(item));
+            addMenuItem(item, defaultIcons.getOrDefault(item, null));
         }
     }
 
@@ -81,6 +85,14 @@ public class Sidebar extends JPanel {
         JButton btn = createMenuButton(label, icon);
         menuButtons.put(label, btn);
         menuPanel.add(btn);
+
+        // Attach any previously registered listeners
+        if (pendingListeners.containsKey(label)) {
+            for (ActionListener l : pendingListeners.get(label)) {
+                btn.addActionListener(wrapWithStateUpdate(label, l));
+            }
+        }
+
         revalidate();
         repaint();
     }
@@ -89,9 +101,55 @@ public class Sidebar extends JPanel {
     public void onMenuClick(String label, ActionListener listener) {
         JButton btn = menuButtons.get(label);
         if (btn != null) {
-            btn.addActionListener(listener);
+            btn.addActionListener(e -> {
+                setActiveMenu(label);
+                listener.actionPerformed(e);
+            });
+        }else{
+            pendingListeners.computeIfAbsent(label, k -> new ArrayList<>())
+                    .add(listener);
         }
     }
+    public void selectMenu(String label) {
+        setActiveMenu(label);
+        JButton btn = menuButtons.get(label);
+        if (btn != null) {
+            for (ActionListener al : btn.getActionListeners()) {
+                al.actionPerformed(new ActionEvent(btn, ActionEvent.ACTION_PERFORMED, label));
+            }
+        }
+    }
+
+    private void setActiveMenu(String label) {
+        if (!menuButtons.containsKey(label)) return;
+
+        if (selectedMenuLabel != null) {
+            JButton prev = menuButtons.get(selectedMenuLabel);
+            prev.setBackground(new Color(68, 71, 90));
+        }
+
+        JButton current = menuButtons.get(label);
+        current.setBackground(new Color(98, 114, 164));
+        selectedMenuLabel = label;
+        notifyMenuSelected(label);
+    }
+
+    private void notifyMenuSelected(String label){
+        for (var listener:menuSelectionListeners)
+            listener.onMenuSelected(label);
+    }
+
+    public void addMenuSelectionListener(MenuSelectionListener listener){
+        menuSelectionListeners.add(listener);
+    }
+
+    private ActionListener wrapWithStateUpdate(String label,ActionListener original){
+        return e->{
+          setActiveMenu(label);
+          original.actionPerformed(e);
+        };
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -107,5 +165,10 @@ public class Sidebar extends JPanel {
         // Set up for menuPanel's rounded corners
         g2d.setColor(new Color(68, 71, 90));  // Menu background color
         g2d.fillRoundRect(10, 10, getWidth() - 20, getHeight() - 20, 20, 20);
+    }
+
+    // --- External interface for event communication ---
+    public interface MenuSelectionListener {
+        void onMenuSelected(String label);
     }
 }

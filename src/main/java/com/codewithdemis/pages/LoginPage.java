@@ -2,22 +2,24 @@
 package com.codewithdemis.pages;
 
 import com.codewithdemis.components.BankButton;
-import com.codewithdemis.components.BankLabeledInputField;
 import com.codewithdemis.components.BankPasswordLabeledInputField;
 import com.codewithdemis.components.EmailLabeledInputField;
 import com.codewithdemis.components.RoundedLineBorder;
 
+import com.codewithdemis.core.Session;
+import com.codewithdemis.dao.UserDao;
+import com.codewithdemis.models.User;
 import java.awt.*;
+import java.sql.SQLException;
+import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.border.Border;
 
 public class LoginPage extends JPanel {
-
     private BankPasswordLabeledInputField passwordField;
-    private BankLabeledInputField usernameField;
     private JLabel errorLabel;
 
-    public LoginPage() {
+    public LoginPage(Consumer<User> onLoginSuccess) {
 //        setLayout(new GridBagLayout());
         setLayout(new BorderLayout());
         setBackground(new Color(68, 71, 90));
@@ -56,9 +58,8 @@ public class LoginPage extends JPanel {
         inner.fill = GridBagConstraints.HORIZONTAL;
         inner.anchor = GridBagConstraints.CENTER;
 
-        // Username Field
-        usernameField = new BankLabeledInputField("Username", "Username...");
-        var emailField = new EmailLabeledInputField("Email","Email...");
+
+        var emailField = new EmailLabeledInputField("Email", "Email...");
         inner.gridx = 0;
         inner.gridy = 0;
 //        container.add(usernameField, inner);
@@ -101,13 +102,14 @@ public class LoginPage extends JPanel {
 
         // Action Listener for Login Button
         loginButton.addActionListener(e -> {
-            String username = usernameField.getTextField().getText();  // Use getText to retrieve the text
+            String email = emailField.getEmailField().getText();  // Use getText to retrieve the text
             char[] password = passwordField.getPasswordField().getPassword();
 
-            if (authenticate(username, String.valueOf(password))) {
-                // Proceed to next screen (Dashboard)
-                JOptionPane.showMessageDialog(null, "Login successful!");
-                // Switch to the Dashboard or main frame here
+            var user = authenticate(email, String.valueOf(password));
+              if(user != null){
+                  Session.getInstance().login(user);
+                  if(onLoginSuccess != null)
+                      onLoginSuccess.accept(user);
             } else {
                 String errorMsg = "Invalid username or password.";
                 errorLabel.setText(errorMsg);
@@ -116,13 +118,13 @@ public class LoginPage extends JPanel {
         });
     }
 
-    // Mock authentication method
-    private boolean authenticate(String username, String password) {
-        // Replace this with actual authentication logic
-        return ((username.equals("user") && password.equals("password")));
-    }
-
-    private Border createRoundedBorder(Color color) {
-        return new RoundedLineBorder(color, 2, 16);
+    private User authenticate(String email, String password) {
+        try {
+            var userDao = new UserDao();
+            return userDao.findByEmailAndPassword(email, password);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

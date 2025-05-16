@@ -4,6 +4,7 @@ import com.codewithdemis.db.Database;
 import com.codewithdemis.models.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserDao {
@@ -29,5 +30,30 @@ public class UserDao {
             ex.printStackTrace();
             return false;
         }
+    }
+
+    public User findByEmailAndPassword(String email, String password) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ? ;";
+
+        try (Connection conn = Database.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && password.equals(rs.getString("password"))) {
+                return new User(
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("username"),
+                        rs.getString("phone"),
+                        rs.getString("email"),
+                        rs.getInt("age"),
+                        rs.getString("password"),
+                        rs.getString("gender")
+                );
+            }
+        }
+        return null;
     }
 }
