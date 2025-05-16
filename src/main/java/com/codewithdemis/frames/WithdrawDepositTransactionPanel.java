@@ -1,5 +1,6 @@
 package com.codewithdemis.frames;
 
+import com.codewithdemis.dao.TransactionOperation;
 import com.codewithdemis.db.Database;
 
 import javax.swing.*;
@@ -68,7 +69,12 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0.2;
-        add(new JLabel("Select Account:"), gbc);
+        JLabel accountLabel = new JLabel("Select Account:");
+        accountLabel.setForeground(Color.white);
+        accountLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+
+        add(accountLabel, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.8;
@@ -78,7 +84,12 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.2;
-        add(new JLabel("Transaction Type:"), gbc);
+
+        JLabel transactionType = new JLabel("Transaction Type:");
+        transactionType.setForeground(Color.white);
+        transactionType.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(transactionType, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.8;
@@ -88,7 +99,11 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 0.2;
-        add(new JLabel("Amount:"), gbc);
+        JLabel amountLabel = new JLabel("Amount:");
+        amountLabel.setForeground(Color.white);
+        amountLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(amountLabel, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.8;
@@ -99,7 +114,12 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         gbc.gridy = 4;
         gbc.weightx = 0.2;
         gbc.anchor = GridBagConstraints.NORTHWEST;  // Align label top-left for multiline area
-        add(new JLabel("Description:"), gbc);
+
+        JLabel descriptionLabel = new JLabel("Description:");
+        descriptionLabel.setForeground(Color.white);
+        descriptionLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(descriptionLabel, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.8;
@@ -155,34 +175,17 @@ public class WithdrawDepositTransactionPanel extends JPanel {
                 throw new NumberFormatException("Amount must be positive.");
             }
 
-            if (type.equals("Withdrawal")) amount *= -1;
-
-            try (Connection conn = Database.getInstance().getConnection()) {
-                conn.setAutoCommit(false);
-
-                // Update account balance
-                PreparedStatement updateStmt = conn.prepareStatement(
-                        "UPDATE accounts SET balance = balance + ? WHERE id = ?"
-                );
-                updateStmt.setDouble(1, amount);
-                updateStmt.setInt(2, accountId);
-                updateStmt.executeUpdate();
-
-                // Insert transaction
-                PreparedStatement insertStmt = conn.prepareStatement(
-                        "INSERT INTO transactions (account_id, amount, description) VALUES (?, ?, ?)"
-                );
-                insertStmt.setInt(1, accountId);
-                insertStmt.setDouble(2, amount);
-                insertStmt.setString(3, description);
-                insertStmt.executeUpdate();
-
-                conn.commit();
+            try {
+                var operation = new TransactionOperation();
+                if(type.equalsIgnoreCase("WITHDRAWAL"))
+                    operation.withdraw(accountId, amount, description);
+                else if(type.equalsIgnoreCase("DEPOSIT"))
+                    operation.deposit(accountId,amount,description);
                 JOptionPane.showMessageDialog(this, "Transaction successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 amountField.setText("");
                 descriptionArea.setText("");
 
-            } catch (SQLException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Transaction failed!", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -193,7 +196,7 @@ public class WithdrawDepositTransactionPanel extends JPanel {
     }
 
     private void styleTextField(JTextField field) {
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         field.setBackground(new Color(36, 39, 58));
         field.setForeground(new Color(248, 248, 242));
         field.setCaretColor(new Color(189, 147, 249));
@@ -204,7 +207,7 @@ public class WithdrawDepositTransactionPanel extends JPanel {
     }
 
     private void styleTextArea(JTextArea area) {
-        area.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        area.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         area.setBackground(new Color(36, 39, 58));
         area.setForeground(new Color(248, 248, 242));
         area.setCaretColor(new Color(189, 147, 249));

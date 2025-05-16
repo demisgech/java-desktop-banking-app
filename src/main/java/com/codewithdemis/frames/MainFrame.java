@@ -31,7 +31,7 @@ public class MainFrame extends JFrame {
 
         // Sidebar menu
         var sidebar = new Sidebar(
-                "Dashboard", "Transactions", "Settings","Reports",
+                "Dashboard", "Transactions",
                 "User Management","Account Management");
 
         // Main content panel with CardLayout
@@ -40,7 +40,7 @@ public class MainFrame extends JFrame {
 //        mainContent.addPage("Account", new AccountPage(null));
         mainContent.addPage("TransferTransactionPanel", new TransferTransactionPanel());
         mainContent.addPage("WithdrawDepositTransactionPanel", new WithdrawDepositTransactionPanel());
-        mainContent.addPage("Settings", new SettingsPage());
+//        mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
         mainContent.addPage("AccountCreatorPanel",new AccountCreatorPanel());
 
@@ -59,7 +59,7 @@ public class MainFrame extends JFrame {
 
         mainContent.addPage("Transactions",transactions);
         mainContent.addPage("TransactionPanel",new WithdrawDepositTransactionPanel());
-        mainContent.showPage("TransactionPanel");
+        mainContent.showPage("Transactions");
         mainContent.addPage("Account Management",accountManagementPanel);
 
         userManagement.onAdd(e -> mainContent.showPage("Signup"));;
@@ -81,10 +81,11 @@ public class MainFrame extends JFrame {
 
 
         // Hook up menu clicks to show pages
+//        sidebar.onMenuClick("Account", e -> mainContent.showPage("Account"));
+//        sidebar.onMenuClick("Settings", e -> mainContent.showPage("Settings"));
+
         sidebar.onMenuClick("Dashboard", e -> mainContent.showPage("Dashboard"));
-        sidebar.onMenuClick("Account", e -> mainContent.showPage("Account"));
         sidebar.onMenuClick("Transactions", e -> mainContent.showPage("Transactions"));
-        sidebar.onMenuClick("Settings", e -> mainContent.showPage("Settings"));
         sidebar.onMenuClick("User Management", e -> mainContent.showPage("User Management"));
         sidebar.onMenuClick("Account Management", e -> mainContent.showPage("Account Management"));
 

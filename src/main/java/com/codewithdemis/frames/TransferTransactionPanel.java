@@ -1,5 +1,6 @@
 package com.codewithdemis.frames;
 
+import com.codewithdemis.dao.TransactionOperation;
 import com.codewithdemis.db.Database;
 
 import javax.swing.*;
@@ -37,7 +38,12 @@ public class TransferTransactionPanel extends JPanel {
         gbc.gridy++;
 
         // Source Account
-        add(new JLabel("Source Account:"), gbc);
+
+        JLabel sourceAccountLabel = new JLabel("Source Account:");
+        sourceAccountLabel.setForeground(Color.white);
+        sourceAccountLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(sourceAccountLabel, gbc);
         gbc.gridx = 1;
         sourceAccountDropdown = new JComboBox<>();
         styleComboBox(sourceAccountDropdown);
@@ -47,7 +53,11 @@ public class TransferTransactionPanel extends JPanel {
         // Destination Account
         gbc.gridy++;
         gbc.gridx = 0;
-        add(new JLabel("Destination Account:"), gbc);
+        JLabel destinationAccountLabel = new JLabel("Destination Account:");
+        destinationAccountLabel.setForeground(Color.white);
+        destinationAccountLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(destinationAccountLabel, gbc);
         gbc.gridx = 1;
         destinationAccountDropdown = new JComboBox<>();
         styleComboBox(destinationAccountDropdown);
@@ -57,7 +67,11 @@ public class TransferTransactionPanel extends JPanel {
         // Transaction Type
         gbc.gridy++;
         gbc.gridx = 0;
-        add(new JLabel("Transaction Type:"), gbc);
+        JLabel transactionTypeLabel = new JLabel("Transaction Type:");
+        transactionTypeLabel.setForeground(Color.white);
+        transactionTypeLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(transactionTypeLabel, gbc);
         gbc.gridx = 1;
         transactionTypeDropdown = new JComboBox<>(new String[]{"TRANSFER"});
         styleComboBox(transactionTypeDropdown);
@@ -66,7 +80,11 @@ public class TransferTransactionPanel extends JPanel {
         // Amount
         gbc.gridy++;
         gbc.gridx = 0;
-        add(new JLabel("Amount:"), gbc);
+        JLabel amountLabel = new JLabel("Amount:");
+        amountLabel.setForeground(Color.white);
+        amountLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(amountLabel, gbc);
         gbc.gridx = 1;
         amountField = new JTextField(20);
         styleTextField(amountField);
@@ -75,7 +93,11 @@ public class TransferTransactionPanel extends JPanel {
         // Description
         gbc.gridy++;
         gbc.gridx = 0;
-        add(new JLabel("Description:"), gbc);
+        JLabel descriptionLabel = new JLabel("Description:");
+        descriptionLabel.setForeground(Color.white);
+        descriptionLabel.setFont(new Font("OpenSans", Font.BOLD, 20));
+
+        add(descriptionLabel, gbc);
         gbc.gridx = 1;
         descriptionField = new JTextField(20);
         styleTextField(descriptionField);
@@ -168,22 +190,12 @@ public class TransferTransactionPanel extends JPanel {
             int destinationId = Integer.parseInt(destination.split(" - ")[0]);
             double amount = Double.parseDouble(amountText);
 
-            try (Connection conn = Database.getInstance().getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(
-                         "INSERT INTO transactions (source_account_id, destination_account_id, transaction_type, amount, description) " +
-                                 "VALUES (?, ?, ?, ?, ?)")) {
-
-                stmt.setInt(1, sourceId);
-                stmt.setInt(2, destinationId);
-                stmt.setString(3, type);
-                stmt.setDouble(4, amount);
-                stmt.setString(5, description);
-
-                stmt.executeUpdate();
+            var operation = new TransactionOperation();
+            try {
+                operation.transfer(sourceId, destinationId, amount, description);
                 JOptionPane.showMessageDialog(this, "Transaction created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+            } catch (RuntimeException ex) {
                 JOptionPane.showMessageDialog(this, "Database error", "Error", JOptionPane.ERROR_MESSAGE);
             }
 
@@ -247,7 +259,7 @@ public class TransferTransactionPanel extends JPanel {
             gbc.gridy = 2;
             gbc.anchor = GridBagConstraints.LINE_END;
             add(new JLabel("Transaction Type:"), gbc);
-            typeDropdown = new JComboBox<>(new String[] {"Deposit", "Withdrawal"});
+            typeDropdown = new JComboBox<>(new String[]{"Deposit", "Withdrawal"});
             styleComboBox(typeDropdown);
             gbc.gridx = 1;
             gbc.anchor = GridBagConstraints.LINE_START;
@@ -428,6 +440,7 @@ public class TransferTransactionPanel extends JPanel {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     button.setBackground(new Color(104, 91, 224));
                 }
+
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     button.setBackground(new Color(123, 104, 238));
                 }

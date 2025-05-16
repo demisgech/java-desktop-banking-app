@@ -19,7 +19,8 @@ import javax.swing.table.TableCellRenderer;
 public class TransactionsPage extends JPanel {
     private NavigatorListener navigationListener;
     private JTable table;
-    public TransactionsPage( NavigatorListener navigationListener) {
+
+    public TransactionsPage(NavigatorListener navigationListener) {
         this.navigationListener = navigationListener;
         setLayout(new BorderLayout());
         setBackground(new Color(248, 248, 255)); // Same soft white
@@ -32,7 +33,7 @@ public class TransactionsPage extends JPanel {
         add(title, BorderLayout.NORTH);
 
 
-        String[] columns = {"ID", "Type", "Amount", "From Account", "To Account", "Date","Description"};
+        String[] columns = {"ID", "Type", "Amount", "From Account", "To Account", "Date", "Description"};
 //        Object[][] data = {
 //                {"1","DEPOSIT","$5000","-", "ACC1002", "2025-04-02"},
 //                {"2","DEPOSIT","$400.0","-", "ACC1002", "2025-04-02"},
@@ -47,7 +48,13 @@ public class TransactionsPage extends JPanel {
 
         var dataArray = transactions.toArray(new Object[0][]);
 
-         table = new JTable(dataArray, columns);
+        DefaultTableModel model = new DefaultTableModel(dataArray, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Makes cells non-editable
+            }
+        };
+        table = new JTable(model);
 
         table.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         table.setRowHeight(28);
@@ -98,7 +105,7 @@ public class TransactionsPage extends JPanel {
         JPanel buttonPanel = getActionButtonPanel();
 
         add(scrollPane, BorderLayout.CENTER);
-        add(buttonPanel,BorderLayout.SOUTH);
+        add(buttonPanel, BorderLayout.SOUTH);
 
     }
 
@@ -106,7 +113,7 @@ public class TransactionsPage extends JPanel {
     private JPanel getActionButtonPanel() {
         JPanel buttonPanel = new JPanel();
         JButton createButton = new BankButton("Transfer");
-        JButton withdrawDeposit = new BankButton("Deposit/Withdraw","secondary");
+        JButton withdrawDeposit = new BankButton("Deposit/Withdraw", "secondary");
         JButton deleteButton = new BankButton("Delete Transaction", "danger");
 
         buttonPanel.add(createButton);
@@ -130,31 +137,34 @@ public class TransactionsPage extends JPanel {
         deleteButton.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
             if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(null, "Please select an transaction to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Please select a transaction to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            String accountNumber = (String) table.getValueAt(selectedRow, 0);
+            Object value = table.getValueAt(selectedRow, 0);
+            String stringValue = String.valueOf(value); // Safely convert anything to String
 
-            int confirm = JOptionPane.showConfirmDialog(null,
-                    "Are you sure you want to delete transaction " + accountNumber + "?",
+            int confirm = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to delete transaction " + stringValue + "?",
                     "Confirm Delete",
-                    JOptionPane.YES_NO_OPTION);
+                    JOptionPane.YES_NO_OPTION
+            );
 
             if (confirm == JOptionPane.YES_OPTION) {
-                deleteTransaction(accountNumber);
-                // Remove row from table model
+                deleteTransaction(stringValue); // Pass the ID or value
                 ((DefaultTableModel) table.getModel()).removeRow(selectedRow);
             }
         });
+
         return buttonPanel;
     }
 
     private void deleteTransaction(String transactionId) {
-        String sql = "DELETE FROM transactions WHERE transaction_id = ?";
+        String sql = "DELETE FROM transactions WHERE id = ?";
         try (var conn = Database.getInstance().getConnection();
              var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(0, transactionId);
+            stmt.setString(1, transactionId);
             int affectedRows = stmt.executeUpdate();
             if (affectedRows > 0) {
                 JOptionPane.showMessageDialog(null, "Transaction deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -171,26 +181,32 @@ public class TransactionsPage extends JPanel {
         List<Object[]> rows = new ArrayList<>();
 
         String query = """
-        SELECT
-            t.id,
-            tt.type_name,
-            t.amount,
-            t.description,
-            CASE
-                WHEN tt.type_name = 'WITHDRAWAL' THEN a.account_number
-                WHEN tt.type_name = 'TRANSFER' THEN '-'
-                ELSE '-'
-            END AS from_account,
-            CASE
-                WHEN tt.type_name IN ('DEPOSIT', 'TRANSFER') THEN a.account_number
-                ELSE '-'
-            END AS to_account,
-            t.transaction_date
-        FROM transactions t
-        JOIN transaction_types tt ON t.transaction_type_id = tt.id
-        JOIN accounts a ON t.account_id = a.id
-        ORDER BY t.transaction_date DESC;
-    """;
+                SELECT
+                        t.id,
+                        tt.type_name,
+                        t.amount,
+                        t.description,
+                        COALESCE(
+                            CASE
+                                WHEN tt.type_name IN ('WITHDRAWAL', 'TRANSFER') THEN sender.account_number
+                                ELSE NULL
+                            END,
+                            '-'
+                        ) AS from_account,
+                        COALESCE(
+                            CASE
+                                WHEN tt.type_name IN ('DEPOSIT', 'TRANSFER') THEN receiver.account_number
+                                ELSE NULL
+                            END,
+                            '-'
+                        ) AS to_account,
+                        t.transaction_date
+                    FROM transactions t
+                    JOIN transaction_types tt ON t.transaction_type_id = tt.id
+                    LEFT JOIN accounts sender ON t.account_id = sender.id
+                    LEFT JOIN accounts receiver ON t.recipient_account_id = receiver.id
+                    ORDER BY t.transaction_date DESC;
+                """;
 
         try (Connection conn = Database.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
