@@ -1,5 +1,6 @@
 package com.codewithdemis.frames;
 
+import com.codewithdemis.components.BankButton;
 import com.codewithdemis.dao.TransactionOperation;
 import com.codewithdemis.db.Database;
 
@@ -107,8 +108,8 @@ public class TransferTransactionPanel extends JPanel {
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
-        createButton = new JButton("Create Transaction");
-        styleButton(createButton);
+        createButton = new BankButton("Create Transaction");
+
         add(createButton, gbc);
 
         createButton.addActionListener(this::createTransaction);
@@ -131,24 +132,6 @@ public class TransferTransactionPanel extends JPanel {
         comboBox.setForeground(new Color(248, 248, 242));
         comboBox.setBorder(BorderFactory.createLineBorder(new Color(60, 63, 85)));
         comboBox.setFocusable(false);
-    }
-
-    private void styleButton(JButton button) {
-        button.setFont(new Font("OpenSans", Font.BOLD, 16));
-        button.setBackground(new Color(123, 104, 238));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(104, 91, 224));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(123, 104, 238));
-            }
-        });
     }
 
     private void loadAccounts(JComboBox<String> comboBox) {

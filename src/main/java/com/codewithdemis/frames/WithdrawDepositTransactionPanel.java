@@ -1,5 +1,6 @@
 package com.codewithdemis.frames;
 
+import com.codewithdemis.components.BankButton;
 import com.codewithdemis.dao.TransactionOperation;
 import com.codewithdemis.db.Database;
 
@@ -44,8 +45,8 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         styleTextArea(descriptionArea);
         JScrollPane scrollPane = new JScrollPane(descriptionArea);
 
-        submitButton = new JButton("Submit Transaction");
-        styleButton(submitButton);
+        submitButton = new BankButton("Submit Transaction");
+
 
         // Layout setup using GridBagLayout
         GridBagConstraints gbc = new GridBagConstraints();
@@ -223,24 +224,6 @@ public class WithdrawDepositTransactionPanel extends JPanel {
         comboBox.setForeground(new Color(248, 248, 242));
         comboBox.setBorder(BorderFactory.createLineBorder(new Color(60, 63, 85)));
         comboBox.setFocusable(false);
-    }
-
-    private void styleButton(JButton button) {
-        button.setFont(new Font("OpenSans", Font.BOLD, 16));
-        button.setBackground(new Color(123, 104, 238));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(104, 91, 224));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(123, 104, 238));
-            }
-        });
     }
 
     @Override

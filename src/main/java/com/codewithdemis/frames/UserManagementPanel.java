@@ -34,14 +34,14 @@ public class UserManagementPanel extends JPanel {
 
         // Users table
         String[] columns = {"ID", "First Name", "Last Name", "Email", "Role"};
-        Object[][] data = {
-                {"1", "John", "Doe", "john@example.com", "CUSTOMER"},
-                {"2", "Jane", "Smith", "jane@example.com", "ADMIN"}
-        };
+//        Object[][] data = {
+//                {"1", "John", "Doe", "john@example.com", "CUSTOMER"},
+//                {"2", "Jane", "Smith", "jane@example.com", "ADMIN"}
+//        };
 
         List<Object[]> userData = getUserData();
-        for (var d: data)
-            userData.add(d);
+//        for (var d: data)
+//            userData.add(d);
 
         // Convert List<Object[]> to Object[][]
         Object[][] dataArray = userData.toArray(new Object[0][]);
@@ -81,7 +81,7 @@ public class UserManagementPanel extends JPanel {
         buttonPanel.setOpaque(false);
 
         addButton = new BankButton("Add User");
-        editButton = new BankButton("Edit");
+        editButton = new BankButton("Assign Role","success");
         deleteButton = new BankButton("Delete", "danger");
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
@@ -134,8 +134,8 @@ public class UserManagementPanel extends JPanel {
             String sql = """
                     SELECT u.id, u.first_name, u.last_name, u.email, r.name AS role_name
                     FROM users u
-                    JOIN user_roles ur ON u.id = ur.user_id
-                    JOIN roles r ON ur.role_id = r.id;
+                    LEFT JOIN user_roles ur ON u.id = ur.user_id
+                    LEFT JOIN roles r ON ur.role_id = r.id;
                     """;
 
             var result = statement.executeQuery(sql);
@@ -190,7 +190,7 @@ public class UserManagementPanel extends JPanel {
         addButton.addActionListener(listener);
     }
 
-    public void onEdit(ActionListener listener) {
+    public void onAssignRole(ActionListener listener) {
         editButton.addActionListener(listener);
     }
 
