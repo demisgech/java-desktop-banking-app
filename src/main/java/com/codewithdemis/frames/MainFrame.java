@@ -7,7 +7,6 @@ import com.codewithdemis.core.Session;
 import com.codewithdemis.pages.ProfilePage;
 import com.codewithdemis.pages.DashboardPage;
 import com.codewithdemis.pages.LoginPage;
-import com.codewithdemis.pages.SettingsPage;
 import com.codewithdemis.pages.SignupPage;
 import com.codewithdemis.pages.TransactionsPage;
 
@@ -58,13 +57,16 @@ public class MainFrame extends JFrame {
             mainContent.showPage(page);
         });
 
+
         mainContent.addPage("Transactions",transactions);
         mainContent.addPage("TransactionPanel",new WithdrawDepositTransactionPanel());
         mainContent.showPage("Transactions");
         mainContent.addPage("Account Management",accountManagementPanel);
 
+        mainContent.addPage("RoleAssignment",new RoleAssignmentPanel());
+
         userManagement.onAdd(e -> mainContent.showPage("Signup"));;
-        userManagement.onEdit(e -> mainContent.showPage("Profile"));;
+        userManagement.onAssignRole(e -> mainContent.showPage("RoleAssignment"));;
         userManagement.onDelete(e -> {
          // Delete user from the database here
         });;
