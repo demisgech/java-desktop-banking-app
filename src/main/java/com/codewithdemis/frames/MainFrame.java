@@ -38,7 +38,8 @@ public class MainFrame extends JFrame {
         MainContentPanel mainContent = new MainContentPanel();
         mainContent.addPage("Dashboard", new DashboardPage());
 //        mainContent.addPage("Account", new AccountPage(null));
-        mainContent.addPage("Transactions", new TransactionsPage());
+        mainContent.addPage("TransferTransactionPanel", new TransferTransactionPanel());
+        mainContent.addPage("WithdrawDepositTransactionPanel", new WithdrawDepositTransactionPanel());
         mainContent.addPage("Settings", new SettingsPage());
         mainContent.addPage("Login", new LoginPage());
         mainContent.addPage("AccountCreatorPanel",new AccountCreatorPanel());
@@ -47,9 +48,18 @@ public class MainFrame extends JFrame {
         UserManagementPanel userManagement = new UserManagementPanel();
 
         mainContent.addPage("User Management", userManagement);
+
         AccountManagementPanel accountManagementPanel = new AccountManagementPanel(pageName->{
             mainContent.showPage(pageName);
         });
+
+        TransactionsPage transactions = new TransactionsPage((page)->{
+            mainContent.showPage(page);
+        });
+
+        mainContent.addPage("Transactions",transactions);
+        mainContent.addPage("TransactionPanel",new WithdrawDepositTransactionPanel());
+        mainContent.showPage("TransactionPanel");
         mainContent.addPage("Account Management",accountManagementPanel);
 
         userManagement.onAdd(e -> mainContent.showPage("Signup"));;
