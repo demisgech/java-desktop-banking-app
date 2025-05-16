@@ -207,6 +207,8 @@ public class AccountManagementPanel extends JPanel {
                         result.getString("status")
                 });
             }
+            statement.close();
+            instance.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

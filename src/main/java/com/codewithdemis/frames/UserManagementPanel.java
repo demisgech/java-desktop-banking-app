@@ -149,6 +149,8 @@ public class UserManagementPanel extends JPanel {
                         result.getString("role_name")
                 });
             }
+            statement.close();
+            instance.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
