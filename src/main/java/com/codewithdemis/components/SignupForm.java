@@ -1,5 +1,7 @@
 package com.codewithdemis.components;
 
+import com.codewithdemis.core.Session;
+import com.codewithdemis.dao.UserDao;
 import com.codewithdemis.models.User;
 import java.awt.*;
 import java.util.function.Consumer;
@@ -121,42 +123,65 @@ public class SignupForm extends JPanel {
 
 
         signupButton.addActionListener(e -> {
-            String firstName = firstNameField.getTextField().getText();
-            String lastName = lastNameField.getTextField().getText();
-            String age = ageField.getTextField().getText();
-            String email = emailField.getTextField().getText();
-            String phone = phoneField.getTextField().getText();
-            String username = usernameField.getTextField().getText();
+            String firstName = firstNameField.getTextField().getText().trim();
+            String lastName = lastNameField.getTextField().getText().trim();
+            String ageStr = ageField.getTextField().getText().trim();
+            String email = emailField.getTextField().getText().trim();
+            String phone = phoneField.getTextField().getText().trim();
+            String username = usernameField.getTextField().getText().trim();
             String password = new String(passwordField.getPasswordField().getPassword());
             String confirmPassword = new String(confirmPasswordField.getPasswordField().getPassword());
-
             String gender = (String) genderComboBox.getSelectedItem();
 
-            User newUser = new User(firstName, lastName,username, email);
+            // Validation checks (same as before)...
 
-            if (onSignupComplete != null)
-                onSignupComplete.accept(newUser);
-
-            if (firstName.isEmpty() || lastName.isEmpty() || age.isEmpty()
-                    || email.isEmpty() || phone.isEmpty() || username.isEmpty()
-                    || password.isEmpty() || confirmPassword.isEmpty() || gender == null || gender.equals("Select Gender")) {
+            int age;
+            try {
+                age = Integer.parseInt(ageStr);
+                if (age <= 0) throw new NumberFormatException();
+            } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(SignupForm.this,
-                        "Please fill out all fields.",
+                        "Please enter a valid age.",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
-            } else if (!password.equals(confirmPassword)) {
+                return;
+            }
+
+            if (!password.equals(confirmPassword)) {
                 JOptionPane.showMessageDialog(SignupForm.this,
                         "Passwords do not match.",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
-            } else {
+                return;
+            }
+
+            if (gender == null || gender.equals("Select Gender")) {
+                JOptionPane.showMessageDialog(SignupForm.this,
+                        "Please select a gender.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Directly call your DB insertion method
+             var newUser = new User(firstName, lastName, username, phone, email, age, password, gender);
+            var userDao = new UserDao();
+            Session.getInstance().login(newUser);
+            if (userDao.saveUser(newUser)) {
                 JOptionPane.showMessageDialog(SignupForm.this,
                         "Signup successful!\nWelcome, " + firstName + " (" + gender + ")!",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                // Save user account logic goes here
+                if (onSignupComplete != null)
+                    onSignupComplete.accept(null); // or pass some identifier if needed
+            } else {
+                JOptionPane.showMessageDialog(SignupForm.this,
+                        "Failed to save user. Please try again.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
+
     }
 
     public void setOnSignupComplete(Consumer<User> onSignupComplete) {

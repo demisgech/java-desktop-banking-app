@@ -3,6 +3,7 @@ package com.codewithdemis.frames;
 import com.codewithdemis.components.MainContentPanel;
 import com.codewithdemis.components.Navbar;
 import com.codewithdemis.components.Sidebar;
+import com.codewithdemis.core.Session;
 import com.codewithdemis.pages.ProfilePage;
 import com.codewithdemis.pages.DashboardPage;
 import com.codewithdemis.pages.LoginPage;
@@ -71,6 +72,7 @@ public class MainFrame extends JFrame {
         SignupPage signupPage = new SignupPage();
 
         signupPage.setOnSignupComplete(user -> {
+            user = Session.getInstance().getCurrentUser();
             ProfilePage accountPage = new ProfilePage(user);
             mainContent.addPage("Profile", accountPage);
             mainContent.showPage("Profile");

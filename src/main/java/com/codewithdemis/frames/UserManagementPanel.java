@@ -142,15 +142,15 @@ public class UserManagementPanel extends JPanel {
 
             while (result.next()) {
                 userData.add(new Object[]{
-                        result.getString("id"),
+                        result.getInt("id"),
                         result.getString("first_name"),
                         result.getString("last_name"),
                         result.getString("email"),
                         result.getString("role_name")
                 });
             }
-            statement.close();
-            instance.close();
+//            statement.close();
+//            instance.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
