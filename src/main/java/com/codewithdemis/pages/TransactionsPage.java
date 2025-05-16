@@ -1,16 +1,27 @@
 package com.codewithdemis.pages;
 
+import com.codewithdemis.components.BankButton;
+import com.codewithdemis.db.Database;
+import com.codewithdemis.frames.NavigatorListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
+
 
 public class TransactionsPage extends JPanel {
-    public TransactionsPage() {
+    private NavigatorListener navigationListener;
+    private JTable table;
+    public TransactionsPage( NavigatorListener navigationListener) {
+        this.navigationListener = navigationListener;
         setLayout(new BorderLayout());
-//        setBackground(new Color(248, 248, 255)); // Match soft background
-//        setBackground(new Color(20, 22, 34)); // Match soft background
         setBackground(new Color(248, 248, 255)); // Same soft white
 
 
@@ -21,17 +32,22 @@ public class TransactionsPage extends JPanel {
         add(title, BorderLayout.NORTH);
 
 
-        String[] columns = {"ID", "Type", "Amount", "From Account", "To Account", "Date"};
-        Object[][] data = {
-                {"1","DEPOSIT","$5000","-", "ACC1002", "2025-04-02"},
-                {"2","DEPOSIT","$400.0","-", "ACC1002", "2025-04-02"},
-                {"3","WITHDRAW","$50.0","ACC1003", "-", "2025-05-02"},
-                {"4", "DEPOSIT", "$500.00", "-", "ACC1001", "2023-05-25"},
-                {"5", "TRANSFER", "$200.00", "ACC1001", "ACC1002", "2023-05-15"}
-        };
+        String[] columns = {"ID", "Type", "Amount", "From Account", "To Account", "Date","Description"};
+//        Object[][] data = {
+//                {"1","DEPOSIT","$5000","-", "ACC1002", "2025-04-02"},
+//                {"2","DEPOSIT","$400.0","-", "ACC1002", "2025-04-02"},
+//                {"3","WITHDRAW","$50.0","ACC1003", "-", "2025-05-02"},
+//                {"4", "DEPOSIT", "$500.00", "-", "ACC1001", "2023-05-25"},
+//                {"5", "TRANSFER", "$200.00", "ACC1001", "ACC1002", "2023-05-15"}
+//        };
 
+        var transactions = fetchTransactions();
+//        for (var d: data)
+//            transactions.add(d);
 
-        JTable table = new JTable(data, columns);
+        var dataArray = transactions.toArray(new Object[0][]);
+
+         table = new JTable(dataArray, columns);
 
         table.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         table.setRowHeight(28);
@@ -79,8 +95,123 @@ public class TransactionsPage extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        add(scrollPane, BorderLayout.CENTER);
+        JPanel buttonPanel = getActionButtonPanel();
 
+        add(scrollPane, BorderLayout.CENTER);
+        add(buttonPanel,BorderLayout.SOUTH);
+
+    }
+
+
+    private JPanel getActionButtonPanel() {
+        JPanel buttonPanel = new JPanel();
+        JButton createButton = new BankButton("Transfer");
+        JButton withdrawDeposit = new BankButton("Deposit/Withdraw","secondary");
+        JButton deleteButton = new BankButton("Delete Transaction", "danger");
+
+        buttonPanel.add(createButton);
+        buttonPanel.add(withdrawDeposit);
+        buttonPanel.add(deleteButton);
+        buttonPanel.setOpaque(false);
+
+        createButton.addActionListener(e -> {
+            if (navigationListener != null) {
+                navigationListener.onNavigate("TransferTransactionPanel");
+            }
+        });
+
+        withdrawDeposit.addActionListener(e -> {
+            if (navigationListener != null) {
+                navigationListener.onNavigate("WithdrawDepositTransactionPanel");
+            }
+        });
+
+        // Add delete action listener
+        deleteButton.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(null, "Please select an transaction to delete.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String accountNumber = (String) table.getValueAt(selectedRow, 0);
+
+            int confirm = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to delete transaction " + accountNumber + "?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                deleteTransaction(accountNumber);
+                // Remove row from table model
+                ((DefaultTableModel) table.getModel()).removeRow(selectedRow);
+            }
+        });
+        return buttonPanel;
+    }
+
+    private void deleteTransaction(String transactionId) {
+        String sql = "DELETE FROM transactions WHERE transaction_id = ?";
+        try (var conn = Database.getInstance().getConnection();
+             var stmt = conn.prepareStatement(sql)) {
+            stmt.setString(0, transactionId);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(null, "Transaction deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Transaction not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error deleting transaction: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public List<Object[]> fetchTransactions() {
+        List<Object[]> rows = new ArrayList<>();
+
+        String query = """
+        SELECT
+            t.id,
+            tt.type_name,
+            t.amount,
+            t.description,
+            CASE
+                WHEN tt.type_name = 'WITHDRAWAL' THEN a.account_number
+                WHEN tt.type_name = 'TRANSFER' THEN '-'
+                ELSE '-'
+            END AS from_account,
+            CASE
+                WHEN tt.type_name IN ('DEPOSIT', 'TRANSFER') THEN a.account_number
+                ELSE '-'
+            END AS to_account,
+            t.transaction_date
+        FROM transactions t
+        JOIN transaction_types tt ON t.transaction_type_id = tt.id
+        JOIN accounts a ON t.account_id = a.id
+        ORDER BY t.transaction_date DESC;
+    """;
+
+        try (Connection conn = Database.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet resultSet = stmt.executeQuery()) {
+
+            while (resultSet.next()) {
+                rows.add(new Object[]{
+                        resultSet.getInt("id"),
+                        resultSet.getString("type_name"),
+                        resultSet.getDouble("amount"),
+                        resultSet.getString("from_account"),
+                        resultSet.getString("to_account"),
+                        resultSet.getTimestamp("transaction_date"),
+                        resultSet.getString("description")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return rows;
     }
 
     @Override
