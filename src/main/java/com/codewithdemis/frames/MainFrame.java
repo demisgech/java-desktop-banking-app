@@ -14,6 +14,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 
 public class MainFrame extends JFrame {
     private final Sidebar sidebar = new Sidebar();
+    private Navbar navbar = new Navbar();
     private final MainContentPanel mainContent = new MainContentPanel();
 
     public MainFrame() {
@@ -23,8 +24,6 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Navbar
-        Navbar navbar = new Navbar();
         add(navbar, BorderLayout.NORTH);
 
         // Add all pages
@@ -33,6 +32,20 @@ public class MainFrame extends JFrame {
         // Handle navbar actions
         navbar.onLogin(e -> mainContent.showPage("Login"));
         navbar.onSignup(e -> mainContent.showPage("Signup"));
+        navbar.onLogout(event->{
+            Session.getInstance().logout(); // Clear user session
+
+            remove(sidebar);
+            var loginPage = loginPage();
+
+            mainContent.addPage("Login",loginPage);
+            mainContent.showPage("Login");
+
+            navbar.showLoggedOut();
+            revalidate();
+            repaint();
+            JOptionPane.showMessageDialog(this, "You've been logged out.");
+        });
 
         // Setup sidebar interactions
         setupSidebarNavigation();
@@ -57,30 +70,34 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
+    private LoginPage loginPage() {
+        return new LoginPage(user -> {
+            Session.getInstance().login(user);
+            // Optional: Render profile if you want it always available
+            ProfilePage profilePage = new ProfilePage(user);
+            mainContent.addPage("Profile", profilePage);
+            sidebar.addMenuItem("Profile", FontIcon.of(FontAwesome.USER_CIRCLE, 20, Color.white));
+            sidebar.onMenuClick("Profile", e -> mainContent.showPage("Profile"));
+            handleLoginSuccess("Dashboard");
+            navbar.showLoggedIn();
+        });
+    }
+
     private void setupPages() {
 
-        // Login Page
-        LoginPage loginPage = new LoginPage(user -> {
-            Session.getInstance().login(user);
-            setupSidebarMenu();
-            add(sidebar, BorderLayout.WEST);
-            revalidate();
-            repaint();
-            mainContent.showPage("Dashboard");
-        });
+        var loginPage = loginPage();
         mainContent.addPage("Login", loginPage);
 
 
         // Signup Page
-        SignupPage signupPage = new SignupPage();
-        signupPage.setOnSignupComplete(user -> {
+        SignupPage signupPage = new SignupPage(user->{
             Session.getInstance().login(user);
             ProfilePage profilePage = new ProfilePage(user);
             mainContent.addPage("Profile", profilePage);
             mainContent.showPage("Profile");
-
             sidebar.addMenuItem("Profile", FontIcon.of(FontAwesome.USER_CIRCLE, 20, Color.white));
             sidebar.onMenuClick("Profile", e -> mainContent.showPage("Profile"));
+            handleLoginSuccess("Profile");
         });
 
         mainContent.addPage("Signup", signupPage);
@@ -129,5 +146,13 @@ public class MainFrame extends JFrame {
         } else {
             mainContent.showPage("Login");
         }
+    }
+
+    private void handleLoginSuccess(String pageName) {
+        setupSidebarMenu();
+        add(sidebar, BorderLayout.WEST);
+        revalidate();
+        repaint();
+        mainContent.showPage(pageName);
     }
 }

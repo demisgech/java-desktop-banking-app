@@ -32,7 +32,7 @@ public class UserDao {
         }
     }
 
-    public User findByEmailAndPassword(String email, String password) throws SQLException {
+    public User findUserByEmail(String email) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ? ;";
 
         try (Connection conn = Database.getInstance().getConnection();
@@ -41,7 +41,7 @@ public class UserDao {
             stmt.setString(1, email);
 
             ResultSet rs = stmt.executeQuery();
-            if (rs.next() && password.equals(rs.getString("password"))) {
+            if (rs.next()) {
                 return new User(
                         rs.getString("first_name"),
                         rs.getString("last_name"),

@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import javax.swing.*;
 
 public class SignupForm extends JPanel {
-    private Consumer<User> onSignupComplete;
 
     private BankLabeledInputField firstNameField;
     private BankLabeledInputField lastNameField;
@@ -21,7 +20,7 @@ public class SignupForm extends JPanel {
 
     private JComboBox<String> genderComboBox;
 
-    public SignupForm() {
+    public SignupForm(Consumer<User> onSignupSuccess) {
         setLayout(new GridBagLayout());
         setBackground(new Color(68, 71, 90)); // Dracula background
 
@@ -57,7 +56,8 @@ public class SignupForm extends JPanel {
         // Row 1: First Name and Last Name
         firstNameField = new BankLabeledInputField("First Name", "John");
         lastNameField = new BankLabeledInputField("Last Name", "Doe");
-        c.gridx = 0; c.gridy = row;
+        c.gridx = 0;
+        c.gridy = row;
         formPanel.add(firstNameField, c);
         c.gridx = 1;
         formPanel.add(lastNameField, c);
@@ -66,16 +66,17 @@ public class SignupForm extends JPanel {
         ageField = new BankLabeledInputField("Age", "30");
 
         // Gender ComboBox
-        genderComboBox = new JComboBox<>(new String[] {"Select Gender", "Male", "Female", "Other"});
+        genderComboBox = new JComboBox<>(new String[]{"Select Gender", "Male", "Female", "Other"});
         genderComboBox.setBackground(new Color(248, 248, 255));
         genderComboBox.setForeground(Color.BLACK);
-        genderComboBox.setFont(new Font("OpenSans",Font.BOLD,16));
+        genderComboBox.setFont(new Font("OpenSans", Font.BOLD, 16));
         genderComboBox.setBorder(BorderFactory.createCompoundBorder(
                 new RoundedLineBorder(Color.BLUE, 1, 12),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
 
-        c.gridx = 0; row++;
+        c.gridx = 0;
+        row++;
         c.gridy = row;
         formPanel.add(ageField, c);
 
@@ -89,7 +90,8 @@ public class SignupForm extends JPanel {
         emailField = new BankLabeledInputField("Email", "john.doe@example.com");
         phoneField = new BankLabeledInputField("Phone", "+1234567890");
         row++;
-        c.gridx = 0; c.gridy = row;
+        c.gridx = 0;
+        c.gridy = row;
         formPanel.add(emailField, c);
         c.gridx = 1;
         formPanel.add(phoneField, c);
@@ -97,7 +99,9 @@ public class SignupForm extends JPanel {
         // Row 4: Username
         usernameField = new BankLabeledInputField("Username", "johndoe");
         row++;
-        c.gridx = 0; c.gridy = row; c.gridwidth = 2;
+        c.gridx = 0;
+        c.gridy = row;
+        c.gridwidth = 2;
         formPanel.add(usernameField, c);
         c.gridwidth = 1;
 
@@ -163,17 +167,16 @@ public class SignupForm extends JPanel {
                 return;
             }
 
-            // Directly call your DB insertion method
-             var newUser = new User(firstName, lastName, username, phone, email, age, password, gender);
+            var newUser = new User(firstName, lastName, username, phone, email, age, password, gender);
             var userDao = new UserDao();
-            Session.getInstance().login(newUser);
             if (userDao.saveUser(newUser)) {
+                Session.getInstance().login(newUser);
                 JOptionPane.showMessageDialog(SignupForm.this,
                         "Signup successful!\nWelcome, " + firstName + " (" + gender + ")!",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                if (onSignupComplete != null)
-                    onSignupComplete.accept(null); // or pass some identifier if needed
+                if (onSignupSuccess != null)
+                    onSignupSuccess.accept(newUser);
             } else {
                 JOptionPane.showMessageDialog(SignupForm.this,
                         "Failed to save user. Please try again.",
@@ -182,9 +185,5 @@ public class SignupForm extends JPanel {
             }
         });
 
-    }
-
-    public void setOnSignupComplete(Consumer<User> onSignupComplete) {
-        this.onSignupComplete = onSignupComplete;
     }
 }

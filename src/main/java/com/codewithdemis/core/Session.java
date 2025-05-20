@@ -3,15 +3,15 @@ package com.codewithdemis.core;
 import com.codewithdemis.models.User;
 
 public class Session {
-    private  static Session instance;
+    private static Session instance;
     private User currentUser;
 
-    private Session(){
+    private Session() {
 
     }
 
     public static Session getInstance() {
-        if(instance == null)
+        if (instance == null)
             instance = new Session();
         return instance;
     }
@@ -23,11 +23,12 @@ public class Session {
     public void login(User currentUser) {
         this.currentUser = currentUser;
     }
-    public void logout(){
+
+    public void logout() {
         this.currentUser = null;
     }
 
-    public boolean isLoggedIn(){
+    public boolean isLoggedIn() {
         return this.currentUser != null;
     }
 }

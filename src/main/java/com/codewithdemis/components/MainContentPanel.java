@@ -41,4 +41,8 @@ public class MainContentPanel extends JPanel {
             pages.remove(name);
         }
     }
+
+    public void clear(){
+        pages.clear();
+    }
 }

@@ -8,11 +8,11 @@ import java.awt.*;
 
 public class SignupPage extends JPanel {
     private SignupForm formPanel;
-    public SignupPage() {
+    public SignupPage(Consumer<User> onSignupSuccess) {
         setLayout(new BorderLayout());
         setBackground(new Color(68, 71, 90));
 
-        formPanel = new SignupForm();
+        formPanel = new SignupForm(onSignupSuccess);
 
         JScrollPane scrollPane = new JScrollPane(formPanel);
         scrollPane.setBorder(null);
@@ -22,9 +22,5 @@ public class SignupPage extends JPanel {
 
         // Add scrollPane to main layout
         add(scrollPane, BorderLayout.CENTER);
-    }
-
-    public void setOnSignupComplete(Consumer<User> callback) {
-        this.formPanel.setOnSignupComplete(callback);
     }
 }

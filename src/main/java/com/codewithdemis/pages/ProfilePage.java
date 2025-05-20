@@ -1,5 +1,6 @@
 package com.codewithdemis.pages;
 
+import com.codewithdemis.core.Refreshable;
 import com.codewithdemis.models.User;
 
 import javax.swing.*;
@@ -7,7 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
-public class ProfilePage extends JPanel {
+public class ProfilePage extends JPanel implements Refreshable {
 
     public ProfilePage(User user) {
         setLayout(new BorderLayout());
@@ -128,6 +129,11 @@ public class ProfilePage extends JPanel {
                 BorderFactory.createLineBorder(new Color(98, 114, 164), 1),
                 new EmptyBorder(6, 10, 6, 10)
         ));
+    }
+
+    @Override
+    public void refresh() {
+        
     }
 
     private static class CircularImagePanel extends JPanel {

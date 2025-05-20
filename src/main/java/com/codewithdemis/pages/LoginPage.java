@@ -13,7 +13,6 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.function.Consumer;
 import javax.swing.*;
-import javax.swing.border.Border;
 
 public class LoginPage extends JPanel {
     private BankPasswordLabeledInputField passwordField;
@@ -105,26 +104,21 @@ public class LoginPage extends JPanel {
             String email = emailField.getEmailField().getText();  // Use getText to retrieve the text
             char[] password = passwordField.getPasswordField().getPassword();
 
-            var user = authenticate(email, String.valueOf(password));
-              if(user != null){
-                  Session.getInstance().login(user);
-                  if(onLoginSuccess != null)
-                      onLoginSuccess.accept(user);
-            } else {
-                String errorMsg = "Invalid username or password.";
-                errorLabel.setText(errorMsg);
-                JOptionPane.showMessageDialog(LoginPage.this, errorMsg, "Login Failed", JOptionPane.ERROR_MESSAGE);
+            var userDao = new UserDao();
+            try {
+                var user = userDao.findUserByEmail(email);
+                if (user != null && user.getPassword().equals(String.valueOf(password))) {
+                    Session.getInstance().login(user);
+                    if (onLoginSuccess != null)
+                        onLoginSuccess.accept(user);
+                } else {
+                    String errorMsg = "Invalid username or password.";
+                    errorLabel.setText(errorMsg);
+                    JOptionPane.showMessageDialog(LoginPage.this, errorMsg, "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(LoginPage.this, ex.getMessage(), "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
-    }
-
-    private User authenticate(String email, String password) {
-        try {
-            var userDao = new UserDao();
-            return userDao.findByEmailAndPassword(email, password);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }
